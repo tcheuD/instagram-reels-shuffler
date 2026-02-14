@@ -171,6 +171,7 @@
   }
 
   async function renderStatus() {
+    if (scrollAbort) return; // don't overwrite scroll progress
     const statusNode = document.getElementById(STATUS_ID);
     if (!statusNode) return;
 
