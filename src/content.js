@@ -247,7 +247,9 @@
 
     updateFetchAllButton("Stop");
 
-    let lastCount = 0;
+    // Accumulate URLs across scroll positions (IG virtualizes the grid —
+    // old elements leave the DOM as you scroll down)
+    const accumulated = new Set();
     let staleRounds = 0;
 
     while (!signal.aborted && staleRounds < MAX_STALE_ROUNDS) {
@@ -256,16 +258,17 @@
 
       if (signal.aborted) break;
 
-      const count = collectVisibleReelLinks().length;
-      if (statusNode) statusNode.textContent = `Scrolling... ${count} reels found`;
+      const sizeBefore = accumulated.size;
+      collectVisibleReelLinks().forEach((url) => accumulated.add(url));
 
-      if (count === lastCount) {
+      if (statusNode) statusNode.textContent = `Scrolling... ${accumulated.size} reels found`;
+
+      if (accumulated.size === sizeBefore) {
         staleRounds++;
       } else {
         staleRounds = 0;
       }
-      lastCount = count;
-      if (count >= MAX_QUEUE_SIZE) break;
+      if (accumulated.size >= MAX_QUEUE_SIZE) break;
     }
 
     scrollAbort = null;
@@ -274,7 +277,23 @@
     if (signal.aborted) return;
 
     window.scrollTo(0, 0);
-    await createQueueFromVisible();
+
+    if (!accumulated.size) {
+      showToast("No reels found. Open a reels tab and scroll.");
+      return;
+    }
+
+    const shuffledLinks = shuffle(Array.from(accumulated).slice(0, MAX_QUEUE_SIZE));
+    const queueState = {
+      links: shuffledLinks,
+      index: 0,
+      createdAt: Date.now(),
+      sourceUrl: location.href
+    };
+
+    await saveQueueState(queueState);
+    showToast(`Shuffled ${shuffledLinks.length} reels`);
+    navigateSafe(shuffledLinks[0]);
   }
 
   async function createQueueFromVisible() {
