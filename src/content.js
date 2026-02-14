@@ -79,14 +79,16 @@
       });
     }
 
-    // Also look for /p/ links that sit next to a video/reel indicator
+    // Also look for /p/ links that have a reel/video overlay icon
     if (!onReelsPage) {
       document.querySelectorAll('a[href*="/p/"]').forEach((a) => {
-        // Check if this grid item has a video overlay (SVG play icon or video element)
-        const hasVideoIndicator =
-          a.querySelector("svg") !== null ||
-          a.closest("div")?.querySelector('svg[aria-label]') !== null;
-        if (hasVideoIndicator) {
+        const hasReelIcon = a.querySelector(
+          'svg[aria-label*="Reel"], svg[aria-label*="reel"], ' +
+          'svg[aria-label*="Clip"], svg[aria-label*="clip"], ' +
+          'svg[aria-label*="Video"], svg[aria-label*="video"], ' +
+          'svg[aria-label*="vidéo"], svg[aria-label*="Vidéo"]'
+        ) !== null;
+        if (hasReelIcon) {
           const url = extractPostUrl(a.getAttribute("href"));
           if (url) links.add(url);
         }
@@ -183,12 +185,14 @@
 
     // Strategy 2: if still muted, find and click Instagram's volume button
     if (video.muted) {
+      const UNMUTE_TERMS = [
+        "mute", "unmute", "audio", "volume",
+        "activer le son", "couper le son", "sound on", "sound off"
+      ];
       const btns = document.querySelectorAll('button, [role="button"]');
       for (const btn of btns) {
         const label = (btn.getAttribute("aria-label") || "").toLowerCase();
-        // Covers EN (audio, mute, unmute) and FR (son, muet, activer le son)
-        if (label.includes("mute") || label.includes("audio") ||
-            label.includes("son") || label.includes("volume")) {
+        if (UNMUTE_TERMS.some((term) => label.includes(term))) {
           btn.click();
           break;
         }
@@ -230,12 +234,19 @@
     if (btn) btn.textContent = label;
   }
 
+  function setOtherButtonsDisabled(disabled) {
+    document.querySelectorAll("#irs-root .irs-button:not(.irs-fetch-all)").forEach((btn) => {
+      btn.disabled = disabled;
+    });
+  }
+
   async function autoScrollAndShuffle() {
     // Toggle: if already scrolling, cancel
     if (scrollAbort) {
       scrollAbort.abort();
       scrollAbort = null;
       updateFetchAllButton("Fetch All & Shuffle");
+      setOtherButtonsDisabled(false);
       showToast("Cancelled");
       await renderStatus();
       return;
@@ -246,6 +257,7 @@
     const statusNode = document.getElementById(STATUS_ID);
 
     updateFetchAllButton("Stop");
+    setOtherButtonsDisabled(true);
 
     // Accumulate URLs across scroll positions (IG virtualizes the grid —
     // old elements leave the DOM as you scroll down)
@@ -273,6 +285,7 @@
 
     scrollAbort = null;
     updateFetchAllButton("Fetch All & Shuffle");
+    setOtherButtonsDisabled(false);
 
     if (signal.aborted) return;
 
@@ -336,8 +349,16 @@
       showToast("Queue empty — shuffle first.");
       return;
     }
+    if (queueState.links.length === 1) {
+      showToast("Only 1 reel in queue.");
+      return;
+    }
 
-    const randomIndex = Math.floor(Math.random() * queueState.links.length);
+    let randomIndex;
+    do {
+      randomIndex = Math.floor(Math.random() * queueState.links.length);
+    } while (randomIndex === queueState.index);
+
     queueState.index = randomIndex;
     await saveQueueState(queueState);
     navigateSafe(queueState.links[randomIndex]);

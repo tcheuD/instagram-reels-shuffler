@@ -42,8 +42,14 @@
   color: #fff;
 }
 
-#irs-root .irs-button:hover {
+#irs-root .irs-button:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.17);
+}
+
+#irs-root .irs-button:disabled {
+  opacity: 0.35;
+  cursor: default;
+  pointer-events: none;
 }
 
 #irs-root .irs-button-wide {

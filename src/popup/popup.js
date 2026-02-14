@@ -73,6 +73,8 @@
       renderState(state, 0);
     }
 
+    const NAV_ACTIONS = new Set(["IRS_SHUFFLE", "IRS_FETCH_ALL", "IRS_NEXT", "IRS_RANDOM"]);
+
     controlsEl.addEventListener("click", async (e) => {
       const btn = e.target.closest("[data-action]");
       if (!btn || btn.disabled) return;
@@ -83,15 +85,18 @@
       try {
         await sendToTab(tab, { type: action });
 
-        // Small delay to let storage update
-        await new Promise((r) => setTimeout(r, 200));
+        // Navigation actions change the page — close popup
+        if (NAV_ACTIONS.has(action)) {
+          window.close();
+          return;
+        }
 
+        // Non-nav actions (Clear): refresh status
+        await new Promise((r) => setTimeout(r, 200));
         try {
           const status = await sendToTab(tab, { type: "IRS_STATUS" });
-          if (status) {
-            renderState(status.queue, status.visibleCount);
-          }
-        } catch { /* tab may have navigated */ }
+          if (status) renderState(status.queue, status.visibleCount);
+        } catch { /* content script reloading */ }
       } catch {
         // Content script might not be ready
       } finally {
