@@ -4,7 +4,8 @@
   "description": "Shuffle currently visible Instagram Reel links and watch in random order.",
   "version": "1.0.0",
   "permissions": [
-    "storage"
+    "storage",
+    "activeTab"
   ],
   "host_permissions": [
     "https://www.instagram.com/*"
