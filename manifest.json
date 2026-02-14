@@ -36,6 +36,9 @@
     },
     "default_popup": "src/popup/popup.html"
   },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'none'"
+  },
   "browser_specific_settings": {
     "gecko": {
       "id": "reel-shuffler@tcheuD",
