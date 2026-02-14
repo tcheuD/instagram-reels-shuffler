@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Instagram Reel Shuffler",
   "description": "Shuffle currently visible Instagram Reel links and watch in random order.",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "permissions": [
     "storage"
   ],
@@ -23,7 +23,23 @@
       "run_at": "document_idle"
     }
   ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
   "action": {
-    "default_title": "Instagram Reel Shuffler"
+    "default_title": "Reel Shuffler",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png"
+    },
+    "default_popup": "src/popup/popup.html"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "reel-shuffler@tcheuD",
+      "strict_min_version": "109.0"
+    }
   }
 }

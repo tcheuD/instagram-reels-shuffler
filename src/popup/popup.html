@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div id="popup">
+    <h1 class="title">Reel Shuffler</h1>
+
+    <div id="status-section">
+      <p id="queue-position" class="status-line">Queue 0/0</p>
+      <p id="source-info" class="status-line secondary"></p>
+    </div>
+
+    <div id="controls">
+      <button id="btn-shuffle" class="btn btn-primary" data-action="IRS_SHUFFLE">Shuffle Visible</button>
+      <button id="btn-next" class="btn" data-action="IRS_NEXT">Next</button>
+      <button id="btn-random" class="btn" data-action="IRS_RANDOM">Random</button>
+      <button id="btn-clear" class="btn btn-danger" data-action="IRS_CLEAR">Clear Queue</button>
+    </div>
+
+    <p id="error-msg" class="error hidden">Open Instagram first</p>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

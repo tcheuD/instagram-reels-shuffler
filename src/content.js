@@ -206,6 +206,30 @@
     document.body.appendChild(root);
   }
 
+  chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+    switch (message.type) {
+      case "IRS_STATUS": {
+        loadQueueState().then((queue) => {
+          const visibleCount = collectVisibleReelLinks().length;
+          sendResponse({ queue, visibleCount });
+        });
+        return true;
+      }
+      case "IRS_SHUFFLE":
+        createQueueFromVisible();
+        break;
+      case "IRS_NEXT":
+        openNextInQueue();
+        break;
+      case "IRS_RANDOM":
+        openRandomFromQueue();
+        break;
+      case "IRS_CLEAR":
+        clearQueue();
+        break;
+    }
+  });
+
   installPanel();
   renderStatus();
 

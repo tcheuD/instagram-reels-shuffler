@@ -1,41 +1,42 @@
-# Instagram Reel Shuffler
+# Reel Shuffler
 
-Instagram does not currently provide a native "shuffle reels" button. This extension is a practical workaround: it shuffles the Reel links that are currently visible on your page and lets you jump through that queue in random order.
+Instagram doesn't have a "shuffle reels" button. This extension fixes that: it collects visible Reel links from any page, shuffles them with Fisher-Yates, and lets you watch them in random order.
 
 ## What it does
 
-- Collects visible Reel links (`/reel/...`) from the current page.
-- Shuffles them with Fisher-Yates.
-- Opens Reels in randomized order using `Next` or `Random`.
-- Saves the queue in extension storage.
+- Collects visible Reel links (`/reel/...`) from the current page
+- Shuffles them randomly
+- Opens Reels in randomized order using **Next** or **Random**
+- Saves the queue in extension storage (persists across tabs)
+- Popup UI to control the queue without the floating panel
 
-## Limitations
+## Install
 
-- It cannot override Instagram's backend ranking for your home Reels feed.
-- It only shuffles Reel links loaded in your current browser view.
-- It works on Instagram Web (`https://www.instagram.com`), not the mobile app.
+### Firefox
 
-## Install (Chrome/Edge)
+1. Open `about:debugging#/runtime/this-firefox`
+2. Click **Load Temporary Add-on...**
+3. Select the `manifest.json` file inside this folder
+4. Open Instagram and use the floating panel or the extension popup
 
-1. Open `chrome://extensions` (or `edge://extensions`).
-2. Enable **Developer mode**.
-3. Click **Load unpacked**.
-4. Select this folder: `instagram-reels-shuffler`.
-5. Open Instagram web and use the floating panel at bottom-right.
+### Chrome / Edge
+
+1. Open `chrome://extensions` (or `edge://extensions`)
+2. Enable **Developer mode**
+3. Click **Load unpacked**
+4. Select this folder
+5. Open Instagram and use the floating panel or the extension popup
 
 ## Usage
 
-1. Open a profile Reels tab or any page with visible reel tiles.
-2. Scroll a bit so more reel links are loaded.
-3. Click `Shuffle Visible`.
-4. Use `Next` or `Random` to watch in non-chronological order.
+1. Open a profile's Reels tab or any page with visible reel tiles
+2. Scroll down to load more reels into view
+3. Click **Shuffle Visible** (floating panel or popup)
+4. Use **Next** to go through the shuffled queue, or **Random** to jump anywhere
+5. **Clear Queue** to reset
 
-## Create a new GitHub repo
+## Limitations
 
-```bash
-cd instagram-reels-shuffler
-git init
-git add .
-git commit -m "feat: initial instagram reel shuffler extension"
-gh repo create instagram-reels-shuffler --public --source=. --remote=origin --push
-```
+- Only shuffles Reel links already loaded in your browser (scroll to load more)
+- Works on Instagram Web (`https://www.instagram.com`), not the mobile app
+- Cannot override Instagram's backend ranking for the home Reels feed
