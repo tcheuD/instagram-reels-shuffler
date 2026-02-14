@@ -170,6 +170,51 @@
     location.href = url;
   }
 
+  // Auto-unmute: try direct video.muted, then fallback to clicking IG's volume button
+  function tryUnmuteVideo() {
+    const video = document.querySelector("video");
+    if (!video) return false;
+
+    // Strategy 1: set muted directly
+    try {
+      video.muted = false;
+      video.volume = 1;
+    } catch { /* blocked by autoplay policy */ }
+
+    // Strategy 2: if still muted, find and click Instagram's volume button
+    if (video.muted) {
+      const btns = document.querySelectorAll('button, [role="button"]');
+      for (const btn of btns) {
+        const label = (btn.getAttribute("aria-label") || "").toLowerCase();
+        // Covers EN (audio, mute, unmute) and FR (son, muet, activer le son)
+        if (label.includes("mute") || label.includes("audio") ||
+            label.includes("son") || label.includes("volume")) {
+          btn.click();
+          break;
+        }
+      }
+    }
+
+    return !video.muted;
+  }
+
+  async function autoUnmuteIfInQueue() {
+    const onReelPage = REEL_PATH_RE.test(location.pathname) || POST_PATH_RE.test(location.pathname);
+    if (!onReelPage) return;
+
+    const queueState = await loadQueueState();
+    if (!queueState.links.length) return;
+
+    // Retry a few times — video element appears async
+    let attempts = 0;
+    const interval = setInterval(() => {
+      attempts++;
+      if (tryUnmuteVideo() || attempts >= 10) {
+        clearInterval(interval);
+      }
+    }, 500);
+  }
+
   async function renderStatus() {
     if (scrollAbort) return; // don't overwrite scroll progress
     const statusNode = document.getElementById(STATUS_ID);
@@ -356,5 +401,6 @@
 
   installPanel();
   renderStatus();
+  autoUnmuteIfInQueue();
   window.setInterval(renderStatus, 2500);
 })();
