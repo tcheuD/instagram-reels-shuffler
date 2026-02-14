@@ -4,7 +4,11 @@
   const TOAST_ID = "irs-toast";
   const STORAGE_KEY = "irsQueueState";
   const MAX_QUEUE_SIZE = 400;
+  const SCROLL_DELAY_MS = 1000;
+  const MAX_STALE_ROUNDS = 3;
   const IG_ORIGIN = "https://www.instagram.com";
+
+  let scrollAbort = null;
 
   // Match /reel/{code}/ with optional username prefix /{user}/reel/{code}/
   const REEL_PATH_RE = /^(\/[^/?#]+)?\/reel\/([^/?#]+)\/?$/;
@@ -175,6 +179,58 @@
     statusNode.textContent = `Queue ${queuePositionText(queueState)} | Visible: ${visible}`;
   }
 
+  function updateFetchAllButton(label) {
+    const btn = document.querySelector("#irs-root .irs-fetch-all");
+    if (btn) btn.textContent = label;
+  }
+
+  async function autoScrollAndShuffle() {
+    // Toggle: if already scrolling, cancel
+    if (scrollAbort) {
+      scrollAbort.abort();
+      scrollAbort = null;
+      updateFetchAllButton("Fetch All & Shuffle");
+      showToast("Cancelled");
+      await renderStatus();
+      return;
+    }
+
+    scrollAbort = new AbortController();
+    const signal = scrollAbort.signal;
+    const statusNode = document.getElementById(STATUS_ID);
+
+    updateFetchAllButton("Stop");
+
+    let lastCount = 0;
+    let staleRounds = 0;
+
+    while (!signal.aborted && staleRounds < MAX_STALE_ROUNDS) {
+      window.scrollTo(0, document.body.scrollHeight);
+      await new Promise((r) => setTimeout(r, SCROLL_DELAY_MS));
+
+      if (signal.aborted) break;
+
+      const count = collectVisibleReelLinks().length;
+      if (statusNode) statusNode.textContent = `Scrolling... ${count} reels found`;
+
+      if (count === lastCount) {
+        staleRounds++;
+      } else {
+        staleRounds = 0;
+      }
+      lastCount = count;
+      if (count >= MAX_QUEUE_SIZE) break;
+    }
+
+    scrollAbort = null;
+    updateFetchAllButton("Fetch All & Shuffle");
+
+    if (signal.aborted) return;
+
+    window.scrollTo(0, 0);
+    await createQueueFromVisible();
+  }
+
   async function createQueueFromVisible() {
     const visible = collectVisibleReelLinks();
     if (!visible.length) {
@@ -252,8 +308,12 @@
     status.className = "irs-status";
     status.textContent = "Queue 0/0 | Visible: 0";
 
+    const fetchAllBtn = createButton("Fetch All & Shuffle", autoScrollAndShuffle);
+    fetchAllBtn.classList.add("irs-fetch-all", "irs-button-wide");
+
     const controls = document.createElement("div");
     controls.className = "irs-controls";
+    controls.appendChild(fetchAllBtn);
     controls.appendChild(createButton("Shuffle Visible", createQueueFromVisible));
     controls.appendChild(createButton("Next", openNextInQueue));
     controls.appendChild(createButton("Random", openRandomFromQueue));
@@ -277,6 +337,9 @@
       }
       case "IRS_SHUFFLE":
         createQueueFromVisible();
+        break;
+      case "IRS_FETCH_ALL":
+        autoScrollAndShuffle();
         break;
       case "IRS_NEXT":
         openNextInQueue();

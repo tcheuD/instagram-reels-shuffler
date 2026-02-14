@@ -69,13 +69,17 @@ body {
   background: rgba(255, 255, 255, 0.22);
 }
 
-.btn-primary {
+.btn-accent {
   background: rgba(0, 190, 181, 0.2);
   border-color: rgba(0, 190, 181, 0.35);
 }
 
-.btn-primary:hover {
+.btn-accent:hover {
   background: rgba(0, 190, 181, 0.32);
+}
+
+.wide {
+  grid-column: span 2;
 }
 
 .btn-danger {

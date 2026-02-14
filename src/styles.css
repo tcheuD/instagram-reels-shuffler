@@ -46,6 +46,16 @@
   background: rgba(255, 255, 255, 0.17);
 }
 
+#irs-root .irs-button-wide {
+  grid-column: span 2;
+  background: rgba(0, 190, 181, 0.2);
+  border-color: rgba(0, 190, 181, 0.35);
+}
+
+#irs-root .irs-button-wide:hover {
+  background: rgba(0, 190, 181, 0.32);
+}
+
 #irs-toast {
   margin-top: 8px;
   opacity: 0;
